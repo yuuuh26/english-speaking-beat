@@ -7,7 +7,6 @@ import { MODE_META, createSession, applyAnswer, reviewOrder, memoryMarkup, updat
 
 const $ = id => document.getElementById(id);
 const screens = ["home", "game", "result", "settings"];
-const MIC_BGM_LEVEL = .3;
 const store = new Store(); const speech = new SpeechController(); const audio = new AudioController();
 let phrases = []; let tracks = []; let config; let settings; let session; let currentPhrase; let promptReadyAt = 0; let currentMemoryLevel = 1; let paused = false; let sessionStartLevel = 1;
 
@@ -98,9 +97,7 @@ async function nextQuestion() {
     $("speechStatus").textContent = "このブラウザは音声認識に未対応です";
     return;
   }
-  $("speechStatus").textContent = "自動で聞き取りを開始します…";
-  promptReadyAt = performance.now();
-  audio.duck(true, MIC_BGM_LEVEL);
+  $("speechStatus").textContent = "発話の準備中…";
   if (!paused) void listen();
 }
 
@@ -113,21 +110,36 @@ async function speakModel(text) {
 async function listen() {
   if (!speech.supported || paused) return showToast("Android Chromeで音声認識を利用してね。");
   $("micButton").disabled = true; $("transcriptText").textContent = "";
-  audio.duck(true, MIC_BGM_LEVEL);
+  $("speechStatus").textContent = "Get ready…";
+
+  const cue = $("speakCue"); const cueText = $("speakCueText");
+  cue.classList.remove("hidden", "go"); cue.classList.add("ready");
+  cueText.textContent = "READY…";
+  await wait(700);
+  if (paused || !session) { cue.classList.add("hidden"); cue.classList.remove("ready", "go"); $("micButton").disabled = false; return; }
+
+  cue.classList.remove("ready"); cue.classList.add("go");
+  cueText.textContent = "GO!";
+  audio.pause();
+  promptReadyAt = performance.now();
+
   try {
     let detectedSpeechAt = null;
-    const result = await speech.listen({ lang: settings.speechLang,
+    const resultPromise = speech.listen({ lang: settings.speechLang,
       onStart: () => {
         $("micPulse").classList.add("listening"); $("speechStatus").textContent = "Listening…";
-        audio.duck(true, MIC_BGM_LEVEL);
+        setTimeout(() => { cue.classList.add("hidden"); cue.classList.remove("go"); }, 300);
       },
       onInterim: text => { if (text && detectedSpeechAt === null) detectedSpeechAt = performance.now(); $("transcriptText").textContent = text; }
     });
+    const result = await resultPromise;
     const responseMs = Math.max(0, (detectedSpeechAt ?? performance.now()) - promptReadyAt);
-    audio.duck(false);
+    cue.classList.add("hidden"); cue.classList.remove("ready", "go");
+    await audio.resume();
     $("micPulse").classList.remove("listening"); await processAnswer(result.alternatives, responseMs);
   } catch (error) {
-    audio.duck(false);
+    cue.classList.add("hidden"); cue.classList.remove("ready", "go");
+    await audio.resume();
     $("micPulse").className = "mic-pulse error"; $("speechStatus").textContent = error.message; $("micButton").disabled = false;
     showToast("減点・Combo解除なしで再試行できます", 3200);
   }
@@ -163,9 +175,9 @@ async function endGame() {
   $("pauseOverlay").classList.add("hidden"); paused = false; showScreen("result"); await updateHome();
 }
 
-function pauseGame() { paused = true; speech.stop(); speechSynthesis.cancel(); audio.pause(); $("pauseOverlay").classList.remove("hidden"); }
+function pauseGame() { paused = true; speech.stop(); speechSynthesis.cancel(); audio.pause(); $("speakCue").classList.add("hidden"); $("pauseOverlay").classList.remove("hidden"); }
 function resumeGame() { paused = false; audio.resume(); $("pauseOverlay").classList.add("hidden"); promptReadyAt = performance.now(); }
-function goHome() { if (session && $("gameScreen").classList.contains("active")) { speech.stop(); speechSynthesis.cancel(); audio.pause(); } session = null; showScreen("home"); updateHome(); }
+function goHome() { if (session && $("gameScreen").classList.contains("active")) { speech.stop(); speechSynthesis.cancel(); audio.pause(); } $("speakCue").classList.add("hidden"); session = null; showScreen("home"); updateHome(); }
 
 function fillSettings() {
   const form = $("settingsForm"); const percentFields = new Set(["bgmVolume","sfxVolume","ttsVolume","ducking"]);
