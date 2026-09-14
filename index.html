@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#09122b">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="description" content="音楽に乗って英語表現を反射的に話す、個人用スピーキングゲーム。">
+  <title>SPEAK BEAT</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./assets/icons/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
+  <link rel="stylesheet" href="./css/app.css">
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <button id="backButton" class="icon-button hidden" aria-label="戻る">←</button>
+      <button id="brandButton" class="brand" aria-label="ホームへ">
+        <img src="./assets/icons/icon-192.png" alt="" width="38" height="38">
+        <span><b>SPEAK</b> BEAT</span>
+      </button>
+      <button id="pauseButton" class="icon-button hidden" aria-label="一時停止">Ⅱ</button>
+    </header>
+
+    <main>
+      <section id="homeScreen" class="screen active" aria-labelledby="homeTitle">
+        <div class="hero-card">
+          <div class="level-orb"><span>LV</span><strong id="homeLevel">1</strong></div>
+          <div class="hero-copy">
+            <p class="eyebrow">YOUR SPEAKING RHYTHM</p>
+            <h1 id="homeTitle">声に出すほど、<br><em>英語が速くなる。</em></h1>
+            <div class="xp-track"><span id="xpProgress"></span></div>
+            <p id="xpLabel" class="muted">0 / 500 XP</p>
+          </div>
+        </div>
+
+        <div class="streak-row">
+          <div><span class="streak-fire">🔥</span><strong id="streakCount">0 DAYS</strong></div>
+          <div class="today-stat"><span>TODAY</span><b id="todaySummary">0 sentences · 0m</b></div>
+        </div>
+
+        <div class="mode-grid">
+          <button class="mode-card quick" data-mode="quick">
+            <span class="mode-icon">⚡</span><span><b>QUICK SPEAK</b><small>日本語を瞬時に英語へ</small></span><i>START</i>
+          </button>
+          <button class="mode-card memory" data-mode="memory">
+            <span class="mode-icon">🧠</span><span><b>MEMORY SPEAK</b><small>聞いて覚えて声に出す</small></span><i>START</i>
+          </button>
+          <button class="mode-card listen" data-mode="listen">
+            <span class="mode-icon">👂</span><span><b>LISTEN & REPEAT</b><small>音だけを頼りに再現</small></span><i>START</i>
+          </button>
+          <button class="mode-card review" data-mode="review">
+            <span class="mode-icon">🔁</span><span><b>REVIEW</b><small>苦手表現を優先練習</small></span><i>START</i>
+          </button>
+        </div>
+
+        <button id="settingsButton" class="secondary-button">⚙ SETTINGS</button>
+        <p class="maker">Made by YUU</p>
+      </section>
+
+      <section id="gameScreen" class="screen" aria-live="polite">
+        <div class="game-hud">
+          <div><span>SCORE</span><strong id="scoreValue">0</strong></div>
+          <div class="combo"><span>COMBO</span><strong id="comboValue">0</strong></div>
+          <div><span id="roundLabel">1 / 10</span><strong id="memoryLevelLabel"></strong></div>
+        </div>
+        <div id="feverBanner" class="fever-banner hidden">FEVER ×1.5</div>
+
+        <article id="questionCard" class="question-card">
+          <p id="modeLabel" class="eyebrow">QUICK SPEAK</p>
+          <p id="instructionText" class="instruction">日本語を英語で言おう</p>
+          <h2 id="questionText">準備中…</h2>
+          <div id="memoryText" class="memory-text hidden"></div>
+          <button id="replayTtsButton" class="pill-button hidden">↻ もう一度聞く</button>
+        </article>
+
+        <div id="speechPanel" class="speech-panel">
+          <div id="micPulse" class="mic-pulse"><span>🎙</span></div>
+          <p id="speechStatus">タップして話す</p>
+          <button id="micButton" class="mic-button">SPEAK</button>
+          <p id="transcriptText" class="transcript"></p>
+        </div>
+
+        <div id="feedbackPanel" class="feedback-panel hidden">
+          <div id="ratingBadge" class="rating-badge">GREAT</div>
+          <p id="scoreGain" class="score-gain">+150</p>
+          <dl>
+            <div><dt>模範</dt><dd id="modelAnswer"></dd></div>
+            <div><dt>認識</dt><dd id="recognizedAnswer"></dd></div>
+          </dl>
+          <p id="matchDetail" class="match-detail"></p>
+          <button id="nextButton" class="primary-button">NEXT →</button>
+        </div>
+        <canvas id="fxCanvas" aria-hidden="true"></canvas>
+      </section>
+
+      <section id="resultScreen" class="screen">
+        <p class="eyebrow">SESSION COMPLETE</p>
+        <h2>Nice speaking!</h2>
+        <div class="result-score"><span>SCORE</span><strong id="resultScore">0</strong></div>
+        <div id="levelUpMessage" class="level-up hidden">LEVEL UP!</div>
+        <div class="result-grid">
+          <div><span>XP</span><b id="resultXp">+0</b></div>
+          <div><span>SPOKEN</span><b id="resultSpoken">0</b></div>
+          <div><span>PERFECT</span><b id="resultPerfect">0</b></div>
+          <div><span>GREAT</span><b id="resultGreat">0</b></div>
+          <div><span>GOOD</span><b id="resultGood">0</b></div>
+          <div><span>RETRY</span><b id="resultRetry">0</b></div>
+          <div><span>MAX COMBO</span><b id="resultCombo">0</b></div>
+          <div><span>AVG RESPONSE</span><b id="resultResponse">—</b></div>
+        </div>
+        <button id="replayButton" class="primary-button">もう一度</button>
+        <button id="homeButton" class="secondary-button">ホームへ</button>
+      </section>
+
+      <section id="settingsScreen" class="screen">
+        <p class="eyebrow">CUSTOMIZE</p><h2>Settings</h2>
+        <form id="settingsForm" class="settings-list">
+          <fieldset><legend>Audio</legend>
+            <label>BGM音量 <output id="bgmVolumeOut">55%</output><input name="bgmVolume" type="range" min="0" max="100" value="55"></label>
+            <label>SE音量 <output id="sfxVolumeOut">80%</output><input name="sfxVolume" type="range" min="0" max="100" value="80"></label>
+            <label>TTS音量 <output id="ttsVolumeOut">100%</output><input name="ttsVolume" type="range" min="0" max="100" value="100"></label>
+            <label>TTS速度 <output id="ttsRateOut">0.9×</output><input name="ttsRate" type="range" min="0.6" max="1.3" step="0.1" value="0.9"></label>
+            <label>TTS中BGM <output id="duckingOut">65%</output><input name="ducking" type="range" min="0" max="100" value="65"></label>
+            <label>BGM選択<select id="trackSelect" name="track"></select></label>
+          </fieldset>
+          <fieldset><legend>Speech</legend>
+            <label>認識言語<select name="speechLang"><option value="en-US">English (US)</option><option value="en-GB">English (UK)</option></select></label>
+            <p id="speechSupport" class="status-row"></p>
+          </fieldset>
+          <fieldset><legend>Game</legend>
+            <label>エフェクト強度<select name="effects"><option value="strong">強い</option><option value="normal">標準</option><option value="reduced">控えめ</option></select></label>
+            <label class="toggle-row">振動<input name="vibration" type="checkbox" checked></label>
+            <label>1セッション<select name="rounds"><option>5</option><option selected>10</option><option>20</option></select></label>
+          </fieldset>
+          <fieldset><legend>Memory Speak</legend>
+            <label>難易度<select name="memoryLevel"><option value="auto">AUTO</option><option value="1">Lv1</option><option value="2">Lv2</option><option value="3">Lv3</option><option value="4">Lv4</option><option value="5">Lv5</option></select></label>
+          </fieldset>
+        </form>
+        <div class="info-card">
+          <h3>Data</h3><button id="backupButton" class="secondary-button">Markdownバックアップ出力</button>
+          <p id="backupStatus" class="muted"></p>
+        </div>
+        <div class="info-card"><h3>Information</h3>
+          <p>Version <b id="versionText">1.0.0</b></p>
+          <p id="storageStatus">保存状態を確認中…</p>
+          <p id="persistStatus">永続ストレージを確認中…</p>
+          <label>公開URL<div class="copy-row"><input readonly value="https://yuuuh26.github.io/english-speaking-beat/"><button type="button" data-copy="https://yuuuh26.github.io/english-speaking-beat/">コピー</button></div></label>
+          <label>GitHub<div class="copy-row"><input readonly value="https://github.com/yuuuh26/english-speaking-beat"><button type="button" data-copy="https://github.com/yuuuh26/english-speaking-beat">コピー</button></div></label>
+        </div>
+      </section>
+    </main>
+    <div id="toast" class="toast" role="status"></div>
+    <div id="pauseOverlay" class="pause-overlay hidden"><div><h2>PAUSED</h2><button id="resumeButton" class="primary-button">再開</button><button id="quitButton" class="secondary-button">終了</button></div></div>
+  </div>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
