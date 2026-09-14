@@ -115,12 +115,16 @@ async function listen() {
   const cue = $("speakCue"); const cueText = $("speakCueText");
   cue.classList.remove("hidden", "go"); cue.classList.add("ready");
   cueText.textContent = "READY…";
-  await wait(700);
+
+  await wait(300);
+  if (paused || !session) { cue.classList.add("hidden"); cue.classList.remove("ready", "go"); $("micButton").disabled = false; return; }
+
+  await audio.fadeOutAndPause(280);
+  await wait(180);
   if (paused || !session) { cue.classList.add("hidden"); cue.classList.remove("ready", "go"); $("micButton").disabled = false; return; }
 
   cue.classList.remove("ready"); cue.classList.add("go");
   cueText.textContent = "GO!";
-  audio.pause();
   promptReadyAt = performance.now();
 
   try {
@@ -135,11 +139,11 @@ async function listen() {
     const result = await resultPromise;
     const responseMs = Math.max(0, (detectedSpeechAt ?? performance.now()) - promptReadyAt);
     cue.classList.add("hidden"); cue.classList.remove("ready", "go");
-    if (!paused && session) await audio.resume();
+    if (!paused && session) await audio.resume(180);
     $("micPulse").classList.remove("listening"); await processAnswer(result.alternatives, responseMs);
   } catch (error) {
     cue.classList.add("hidden"); cue.classList.remove("ready", "go");
-    if (!paused && session) await audio.resume();
+    if (!paused && session) await audio.resume(180);
     $("micPulse").className = "mic-pulse error"; $("speechStatus").textContent = error.message; $("micButton").disabled = false;
     showToast("減点・Combo解除なしで再試行できます", 3200);
   }
@@ -154,7 +158,7 @@ async function processAnswer(alternatives, responseMs) {
   $("speechPanel").classList.add("hidden"); $("feedbackPanel").classList.remove("hidden");
   $("ratingBadge").textContent = judgement.rating; $("ratingBadge").style.setProperty("--rating", ({ PERFECT:"#ffe86b", GREAT:"#ff7fcc", GOOD:"#54dda2", RETRY:"#ff7188" })[judgement.rating]);
   $("scoreGain").textContent = `+${points.total}${points.speed.label ? ` · ${points.speed.label} +${points.speed.points}` : ""}`;
-  $("modelAnswer").textContent = currentPhrase.primaryAnswer; $("recognizedAnswer").textContent = judgement.transcript || "—";
+  $("modelAnswer").textContent = currentPhrase.primaryAnswer; $("modelTranslation").textContent = currentPhrase.ja; $("recognizedAnswer").textContent = judgement.transcript || "—";
   $("matchDetail").textContent = judgement.missing.length ? `抜けた可能性：${judgement.missing.join(", ")}` : `音声認識一致度 ${Math.round(judgement.score * 100)}%`;
   $("scoreValue").textContent = session.score.toLocaleString(); $("comboValue").textContent = session.combo;
   $("feverBanner").classList.toggle("hidden", session.combo < config.fever.startsAtCombo);

@@ -1,6 +1,6 @@
 {
   "name": "english-speaking-beat",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "private": true,
   "type": "module",
   "scripts": {"test":"node --test","validate":"node scripts/validate-data.js"}
