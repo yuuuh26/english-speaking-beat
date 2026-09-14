@@ -135,11 +135,11 @@ async function listen() {
     const result = await resultPromise;
     const responseMs = Math.max(0, (detectedSpeechAt ?? performance.now()) - promptReadyAt);
     cue.classList.add("hidden"); cue.classList.remove("ready", "go");
-    await audio.resume();
+    if (!paused && session) await audio.resume();
     $("micPulse").classList.remove("listening"); await processAnswer(result.alternatives, responseMs);
   } catch (error) {
     cue.classList.add("hidden"); cue.classList.remove("ready", "go");
-    await audio.resume();
+    if (!paused && session) await audio.resume();
     $("micPulse").className = "mic-pulse error"; $("speechStatus").textContent = error.message; $("micButton").disabled = false;
     showToast("減点・Combo解除なしで再試行できます", 3200);
   }
