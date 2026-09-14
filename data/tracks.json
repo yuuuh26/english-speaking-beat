@@ -1,0 +1,6 @@
+{
+  "tracks": [
+    {"id":"none","title":"BGMなし（音源追加待ち）","src":null,"enabled":true}
+  ],
+  "help": "MP3を assets/bgm/ に置き、ここへ {id,title,src,enabled} を追加してください。"
+}

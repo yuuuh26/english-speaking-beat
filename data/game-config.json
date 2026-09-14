@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "ratings": {"GOOD": 100, "GREAT": 150, "PERFECT": 200, "RETRY": 0},
+  "speedBonus": {"fastMs": 1000, "fastPoints": 50, "quickMs": 2000, "quickPoints": 25},
+  "memoryMultipliers": {"1": 1, "2": 1.15, "3": 1.35, "4": 1.65, "5": 2},
+  "comboMultipliers": [
+    {"min": 0, "max": 2, "value": 1},
+    {"min": 3, "max": 4, "value": 1.05},
+    {"min": 5, "max": 9, "value": 1.15},
+    {"min": 10, "max": 19, "value": 1.35},
+    {"min": 20, "max": 29, "value": 1.6},
+    {"min": 30, "max": null, "value": 2}
+  ],
+  "fever": {"startsAtCombo": 20, "multiplier": 1.5},
+  "autoMemory": {"raiseAfterHighRatings": 3, "lowerAfterRetries": 2},
+  "judgement": {"perfect": 0.96, "great": 0.82, "good": 0.66},
+  "xp": {"attempt": 5, "GOOD": 8, "GREAT": 12, "PERFECT": 18, "RETRY": 0},
+  "effects": {"durationMs": {"GOOD": 420, "GREAT": 600, "PERFECT": 780}}
+}
