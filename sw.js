@@ -1,4 +1,4 @@
-const CACHE = "speak-beat-v1.0.3";
+const CACHE = "speak-beat-v1.0.4";
 const CORE = [
   "./", "./index.html", "./css/app.css", "./manifest.webmanifest",
   "./js/app.js", "./js/game.js", "./js/judge.js", "./js/scoring.js", "./js/speech.js", "./js/audio.js", "./js/storage.js", "./js/backup.js",
