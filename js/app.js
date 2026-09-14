@@ -120,7 +120,7 @@ async function listen() {
   if (paused || !session) { cue.classList.add("hidden"); cue.classList.remove("ready", "go"); $("micButton").disabled = false; return; }
 
   await audio.fadeOutAndPause(280);
-  await wait(180);
+  await wait(400);
   if (paused || !session) { cue.classList.add("hidden"); cue.classList.remove("ready", "go"); $("micButton").disabled = false; return; }
 
   cue.classList.remove("ready"); cue.classList.add("go");
