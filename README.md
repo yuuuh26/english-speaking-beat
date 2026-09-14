@@ -32,7 +32,14 @@ python3 -m http.server 4173
 {"id":"track-01","title":"Track 01","src":"./assets/bgm/track-01.mp3","enabled":true}
 ```
 
-曲はSTART操作後に読み込み・再生され、問題切替では曲頭へ戻りません。ユーザー提供音源が未配置でも、BGMなしでプレイできます。
+曲はSTART操作後に選択曲だけを読み込み・再生し、問題切替では曲頭へ戻りません。初期搭載曲は次の4曲です。
+
+- Active Recall
+- Perfect Hit Streak
+- Ready, Set, Goal!
+- The Daily Climb
+
+BGM音量を0%にすると無音でプレイできます。
 
 ## Data
 

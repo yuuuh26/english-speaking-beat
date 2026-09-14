@@ -8,7 +8,7 @@ const DEFAULT_PROFILE = {
 
 const DEFAULT_SETTINGS = {
   id: "settings", bgmVolume: .55, sfxVolume: .8, ttsVolume: 1, ttsRate: .9, ducking: .65,
-  track: "none", speechLang: "en-US", effects: "strong", vibration: true, rounds: 10, memoryLevel: "auto", autoLevel: 1
+  track: "active-recall", speechLang: "en-US", effects: "strong", vibration: true, rounds: 10, memoryLevel: "auto", autoLevel: 1
 };
 
 function requestPromise(request) {

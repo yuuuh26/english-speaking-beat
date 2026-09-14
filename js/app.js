@@ -18,7 +18,13 @@ async function init() {
       fetch("./data/game-config.json").then(r => r.json())
     ]);
     phrases = phrases.filter(p => p.enabled !== false);
-    await store.open(); settings = await store.settings(); bindEvents(); fillSettings(); await updateHome();
+    await store.open(); settings = await store.settings();
+    const availableTracks = tracks.filter(track => track.enabled && track.src);
+    if (!availableTracks.some(track => track.id === settings.track)) {
+      settings.track = availableTracks[0]?.id || "none";
+      await store.saveSettings(settings);
+    }
+    bindEvents(); fillSettings(); await updateHome();
     $("storageStatus").textContent = "保存状態：IndexedDB 利用可能";
     const persistent = await persistenceStatus(true);
     $("persistStatus").textContent = `永続ストレージ：${({ enabled:"有効", "not-applied":"未適用", unknown:"確認できません" })[persistent]}`;

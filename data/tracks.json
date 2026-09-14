@@ -1,6 +1,9 @@
 {
   "tracks": [
-    {"id":"none","title":"BGMなし（音源追加待ち）","src":null,"enabled":true}
+    {"id":"active-recall","title":"Active Recall","src":"./assets/bgm/active_recall.mp3","enabled":true,"durationSeconds":117},
+    {"id":"perfect-hit-streak","title":"Perfect Hit Streak","src":"./assets/bgm/perfect_hit_streak.mp3","enabled":true,"durationSeconds":109},
+    {"id":"ready-set-goal","title":"Ready, Set, Goal!","src":"./assets/bgm/ready_set_goal.mp3","enabled":true,"durationSeconds":123},
+    {"id":"the-daily-climb","title":"The Daily Climb","src":"./assets/bgm/the_daily_climb.mp3","enabled":true,"durationSeconds":110}
   ],
   "help": "MP3を assets/bgm/ に置き、ここへ {id,title,src,enabled} を追加してください。"
 }
