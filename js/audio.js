@@ -5,7 +5,7 @@ export class AudioController {
   async play() { if (!this.track.src) return; try { await this.track.play(); } catch {} }
   pause() { this.track.pause(); }
   resume() { return this.play(); }
-  duck(active) { this.track.volume = this.settings.bgmVolume * (active ? this.settings.ducking : 1); }
+  duck(active, factor = this.settings.ducking) { this.track.volume = this.settings.bgmVolume * (active ? factor : 1); }
   async sfx(rating) {
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     if (!AudioCtx || this.settings.sfxVolume <= 0) return;

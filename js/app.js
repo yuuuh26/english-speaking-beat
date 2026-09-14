@@ -7,6 +7,7 @@ import { MODE_META, createSession, applyAnswer, reviewOrder, memoryMarkup, updat
 
 const $ = id => document.getElementById(id);
 const screens = ["home", "game", "result", "settings"];
+const MIC_BGM_LEVEL = .3;
 const store = new Store(); const speech = new SpeechController(); const audio = new AudioController();
 let phrases = []; let tracks = []; let config; let settings; let session; let currentPhrase; let promptReadyAt = 0; let currentMemoryLevel = 1; let paused = false; let sessionStartLevel = 1;
 
@@ -99,8 +100,7 @@ async function nextQuestion() {
   }
   $("speechStatus").textContent = "自動で聞き取りを開始します…";
   promptReadyAt = performance.now();
-  audio.duck(false);
-  void audio.resume();
+  audio.duck(true, MIC_BGM_LEVEL);
   if (!paused) void listen();
 }
 
@@ -113,21 +113,21 @@ async function speakModel(text) {
 async function listen() {
   if (!speech.supported || paused) return showToast("Android Chromeで音声認識を利用してね。");
   $("micButton").disabled = true; $("transcriptText").textContent = "";
-  audio.duck(false);
-  void audio.resume();
+  audio.duck(true, MIC_BGM_LEVEL);
   try {
     let detectedSpeechAt = null;
     const result = await speech.listen({ lang: settings.speechLang,
       onStart: () => {
         $("micPulse").classList.add("listening"); $("speechStatus").textContent = "Listening…";
-        audio.duck(false); void audio.resume();
-        setTimeout(() => { if (speech.listening && !paused) { audio.duck(false); void audio.resume(); } }, 180);
+        audio.duck(true, MIC_BGM_LEVEL);
       },
       onInterim: text => { if (text && detectedSpeechAt === null) detectedSpeechAt = performance.now(); $("transcriptText").textContent = text; }
     });
     const responseMs = Math.max(0, (detectedSpeechAt ?? performance.now()) - promptReadyAt);
+    audio.duck(false);
     $("micPulse").classList.remove("listening"); await processAnswer(result.alternatives, responseMs);
   } catch (error) {
+    audio.duck(false);
     $("micPulse").className = "mic-pulse error"; $("speechStatus").textContent = error.message; $("micButton").disabled = false;
     showToast("減点・Combo解除なしで再試行できます", 3200);
   }
