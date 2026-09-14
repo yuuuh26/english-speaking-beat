@@ -149,7 +149,12 @@ function resumeGame() { paused = false; audio.resume(); $("pauseOverlay").classL
 function goHome() { if (session && $("gameScreen").classList.contains("active")) { speech.stop(); speechSynthesis.cancel(); audio.pause(); } session = null; showScreen("home"); updateHome(); }
 
 function fillSettings() {
-  const form = $("settingsForm"); Object.entries(settings).forEach(([key,value]) => { const input = form.elements[key]; if (!input) return; if (input.type === "checkbox") input.checked = value; else input.value = value; });
+  const form = $("settingsForm"); const percentFields = new Set(["bgmVolume","sfxVolume","ttsVolume","ducking"]);
+  Object.entries(settings).forEach(([key,value]) => {
+    const input = form.elements[key]; if (!input) return;
+    if (input.type === "checkbox") input.checked = value;
+    else input.value = percentFields.has(key) ? Math.round(Number(value) * 100) : value;
+  });
   $("trackSelect").innerHTML = tracks.filter(t => t.enabled).map(t => `<option value="${t.id}">${t.title}</option>`).join(""); $("trackSelect").value = settings.track;
   updateOutputs(); $("speechSupport").textContent = speech.supported ? "✓ 音声認識を利用できます" : "⚠ このブラウザでは音声認識を利用できません";
 }
