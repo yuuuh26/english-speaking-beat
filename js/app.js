@@ -93,23 +93,36 @@ async function nextQuestion() {
   } else {
     $("questionText").textContent = currentPhrase.ja;
   }
-  $("speechStatus").textContent = speech.supported ? "タップして話す" : "このブラウザは音声認識に未対応です";
+  if (!speech.supported) {
+    $("speechStatus").textContent = "このブラウザは音声認識に未対応です";
+    return;
+  }
+  $("speechStatus").textContent = "自動で聞き取りを開始します…";
   promptReadyAt = performance.now();
+  audio.duck(false);
+  void audio.resume();
+  if (!paused) void listen();
 }
 
 async function speakModel(text) {
   $("speechStatus").textContent = "お手本を再生中…"; audio.duck(true);
   await speech.speak(text, { lang: settings.speechLang, rate: settings.ttsRate, volume: settings.ttsVolume, onEnd: () => audio.duck(false) });
-  audio.duck(false); $("speechStatus").textContent = "タップして話す";
+  audio.duck(false); $("speechStatus").textContent = "発話の準備中…";
 }
 
 async function listen() {
   if (!speech.supported || paused) return showToast("Android Chromeで音声認識を利用してね。");
   $("micButton").disabled = true; $("transcriptText").textContent = "";
+  audio.duck(false);
+  void audio.resume();
   try {
     let detectedSpeechAt = null;
     const result = await speech.listen({ lang: settings.speechLang,
-      onStart: () => { $("micPulse").classList.add("listening"); $("speechStatus").textContent = "Listening…"; },
+      onStart: () => {
+        $("micPulse").classList.add("listening"); $("speechStatus").textContent = "Listening…";
+        audio.duck(false); void audio.resume();
+        setTimeout(() => { if (speech.listening && !paused) { audio.duck(false); void audio.resume(); } }, 180);
+      },
       onInterim: text => { if (text && detectedSpeechAt === null) detectedSpeechAt = performance.now(); $("transcriptText").textContent = text; }
     });
     const responseMs = Math.max(0, (detectedSpeechAt ?? performance.now()) - promptReadyAt);
