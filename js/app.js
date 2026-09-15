@@ -67,8 +67,12 @@ async function updateHome() {
 async function startGame(mode) {
   const source = mode === "review" ? reviewOrder(phrases, await store.getAll("progress")) : phrases;
   session = createSession(mode, source, Number(settings.rounds)); sessionStartLevel = levelInfo((await store.profile()).xp).level;
+  const micInfo = await speech.prepareInput({ mode: settings.micMode });
   const selected = tracks.find(t => t.id === settings.track) || tracks[0]; audio.apply(settings); audio.setTrack(selected?.src || null); await audio.play();
-  showScreen("game"); nextQuestion();
+  showScreen("game");
+  if (micInfo.customTrack) showToast(`🎙 ${micInfo.label} を使用・BGM継続モード`, 3200);
+  else if (settings.micMode === "internal-preferred") showToast("本体マイクを固定できないため従来方式で動作します", 3600);
+  nextQuestion();
 }
 
 async function nextQuestion() {
@@ -119,8 +123,15 @@ async function listen() {
   await wait(300);
   if (paused || !session) { cue.classList.add("hidden"); cue.classList.remove("ready", "go"); $("micButton").disabled = false; return; }
 
-  await audio.fadeOutAndPause(280);
-  await wait(400);
+  const keepBgmPlaying = Boolean(speech.inputInfo?.customTrack);
+  if (keepBgmPlaying) {
+    // Bluetoothイヤホン出力＋本体マイク候補ではBGMを止めず、そのまま発話する。
+    await wait(120);
+  } else {
+    // 本体マイクを固定できない場合は、ノイズを抑えた従来方式へ自動フォールバック。
+    await audio.fadeOutAndPause(280);
+    await wait(400);
+  }
   if (paused || !session) { cue.classList.add("hidden"); cue.classList.remove("ready", "go"); $("micButton").disabled = false; return; }
 
   cue.classList.remove("ready"); cue.classList.add("go");
@@ -139,11 +150,11 @@ async function listen() {
     const result = await resultPromise;
     const responseMs = Math.max(0, (detectedSpeechAt ?? performance.now()) - promptReadyAt);
     cue.classList.add("hidden"); cue.classList.remove("ready", "go");
-    if (!paused && session) await audio.resume(180);
+    if (!keepBgmPlaying && !paused && session) await audio.resume(180);
     $("micPulse").classList.remove("listening"); await processAnswer(result.alternatives, responseMs);
   } catch (error) {
     cue.classList.add("hidden"); cue.classList.remove("ready", "go");
-    if (!paused && session) await audio.resume(180);
+    if (!keepBgmPlaying && !paused && session) await audio.resume(180);
     $("micPulse").className = "mic-pulse error"; $("speechStatus").textContent = error.message; $("micButton").disabled = false;
     showToast("減点・Combo解除なしで再試行できます", 3200);
   }
@@ -168,7 +179,7 @@ async function processAnswer(alternatives, responseMs) {
 }
 
 async function endGame() {
-  if (!session) return goHome(); speech.stop(); speechSynthesis.cancel(); audio.pause();
+  if (!session) return goHome(); speech.stop(); speech.releaseInput(); speechSynthesis.cancel(); audio.pause();
   const durationMs = Date.now() - session.startedAt;
   const saved = await store.saveSession({ mode: session.mode, score: session.score, xp: session.xp, spoken: session.spoken, ratings: session.ratings, maxCombo: session.maxCombo, durationMs, memoryMax: session.memoryMax });
   $("resultScore").textContent = session.score.toLocaleString(); $("resultXp").textContent = `+${session.xp}`; $("resultSpoken").textContent = session.spoken;
@@ -181,7 +192,7 @@ async function endGame() {
 
 function pauseGame() { paused = true; speech.stop(); speechSynthesis.cancel(); audio.pause(); $("speakCue").classList.add("hidden"); $("pauseOverlay").classList.remove("hidden"); }
 function resumeGame() { paused = false; audio.resume(); $("pauseOverlay").classList.add("hidden"); promptReadyAt = performance.now(); }
-function goHome() { if (session && $("gameScreen").classList.contains("active")) { speech.stop(); speechSynthesis.cancel(); audio.pause(); } $("speakCue").classList.add("hidden"); session = null; showScreen("home"); updateHome(); }
+function goHome() { if (session && $("gameScreen").classList.contains("active")) { speech.stop(); speech.releaseInput(); speechSynthesis.cancel(); audio.pause(); } $("speakCue").classList.add("hidden"); session = null; showScreen("home"); updateHome(); }
 
 function fillSettings() {
   const form = $("settingsForm"); const percentFields = new Set(["bgmVolume","sfxVolume","ttsVolume","ducking"]);
@@ -192,13 +203,16 @@ function fillSettings() {
   });
   $("trackSelect").innerHTML = tracks.filter(t => t.enabled).map(t => `<option value="${t.id}">${t.title}</option>`).join(""); $("trackSelect").value = settings.track;
   updateOutputs(); $("speechSupport").textContent = speech.supported ? "✓ 音声認識を利用できます" : "⚠ このブラウザでは音声認識を利用できません";
+  $("micStatus").textContent = settings.micMode === "internal-preferred"
+    ? "🎧 イヤホン出力＋スマホ本体マイクをゲーム開始時に優先します"
+    : "従来どおりブラウザ既定のマイクを使用します";
 }
 
 async function saveFormSettings() {
   const form = $("settingsForm"); settings = {
     ...settings, bgmVolume:Number(form.bgmVolume.value)/100, sfxVolume:Number(form.sfxVolume.value)/100,
     ttsVolume:Number(form.ttsVolume.value)/100, ttsRate:Number(form.ttsRate.value), ducking:Number(form.ducking.value)/100,
-    track:form.track.value, speechLang:form.speechLang.value, effects:form.effects.value, vibration:form.vibration.checked,
+    track:form.track.value, speechLang:form.speechLang.value, micMode:form.micMode.value, effects:form.effects.value, vibration:form.vibration.checked,
     rounds:Number(form.rounds.value), memoryLevel:form.memoryLevel.value
   }; audio.apply(settings); await store.saveSettings(settings); updateOutputs();
 }
