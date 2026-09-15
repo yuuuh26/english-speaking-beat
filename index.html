@@ -7,7 +7,7 @@
   <meta name="robots" content="noindex,nofollow,noarchive">
   <meta name="description" content="音楽に乗って英語表現を反射的に話す、個人用スピーキングゲーム。">
   <title>SPEAK BEAT</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=1.0.4">
+  <link rel="manifest" href="./manifest.webmanifest?v=1.1.0">
   <link rel="icon" href="./assets/icons/icon-192.png" sizes="192x192">
   <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
   <link rel="stylesheet" href="./css/app.css">
@@ -130,6 +130,8 @@
           </fieldset>
           <fieldset><legend>Speech</legend>
             <label>認識言語<select name="speechLang"><option value="en-US">English (US)</option><option value="en-GB">English (UK)</option></select></label>
+            <label>マイク入力<select name="micMode"><option value="internal-preferred">スマホ本体マイク優先（推奨）</option><option value="auto">自動・従来方式</option></select></label>
+            <p id="micStatus" class="status-row"></p>
             <p id="speechSupport" class="status-row"></p>
           </fieldset>
           <fieldset><legend>Game</legend>
@@ -146,7 +148,7 @@
           <p id="backupStatus" class="muted"></p>
         </div>
         <div class="info-card"><h3>Information</h3>
-          <p>Version <b id="versionText">1.0.6</b></p>
+          <p>Version <b id="versionText">1.1.0</b></p>
           <p id="storageStatus">保存状態を確認中…</p>
           <p id="persistStatus">永続ストレージを確認中…</p>
           <label>公開URL<div class="copy-row"><input readonly value="https://yuuuh26.github.io/english-speaking-beat/"><button type="button" data-copy="https://yuuuh26.github.io/english-speaking-beat/">コピー</button></div></label>
@@ -157,6 +159,6 @@
     <div id="toast" class="toast" role="status"></div>
     <div id="pauseOverlay" class="pause-overlay hidden"><div><h2>PAUSED</h2><button id="resumeButton" class="primary-button">再開</button><button id="quitButton" class="secondary-button">終了</button></div></div>
   </div>
-  <script type="module" src="./js/app.js"></script>
+  <script type="module" src="./js/app.js?v=1.1.0"></script>
 </body>
 </html>
